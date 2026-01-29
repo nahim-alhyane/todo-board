@@ -37,6 +37,27 @@ export function KanbanBoard() {
           fetchTodos();
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tasks" },
+        () => {
+          fetchTodos();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "stakeholders" },
+        () => {
+          fetchTodos();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "attachments" },
+        () => {
+          fetchTodos();
+        }
+      )
       .subscribe();
 
     return () => {

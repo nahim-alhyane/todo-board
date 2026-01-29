@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Todo } from "./types";
-import { User, CheckCircle2, Circle, Sparkles } from "lucide-react";
+import { User, CheckCircle2, Circle, Sparkles, Paperclip, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TodoCardProps {
@@ -17,6 +17,8 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
   const hasTasks = totalTasks > 0;
   const allTasksComplete = hasTasks && completedTasks === totalTasks;
   const progress = hasTasks ? (completedTasks / totalTasks) * 100 : 0;
+  const stakeholderCount = todo.stakeholders?.length || 0;
+  const attachmentCount = todo.attachments?.length || 0;
 
   const getAssigneeConfig = (assignee: string | null) => {
     if (assignee === "nahim") {
@@ -71,7 +73,7 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
         </div>
       </CardHeader>
 
-      {(todo.description || hasTasks) && (
+      {(todo.description || hasTasks || stakeholderCount > 0 || attachmentCount > 0) && (
         <CardContent className="space-y-3 relative">
           {todo.description && (
             <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
@@ -113,6 +115,24 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
                   </>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Metadata row: Stakeholders & Attachments */}
+          {(stakeholderCount > 0 || attachmentCount > 0) && (
+            <div className="flex items-center gap-3 pt-1">
+              {stakeholderCount > 0 && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Users className="h-3.5 w-3.5" />
+                  <span className="font-medium">{stakeholderCount}</span>
+                </div>
+              )}
+              {attachmentCount > 0 && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Paperclip className="h-3.5 w-3.5" />
+                  <span className="font-medium">{attachmentCount}</span>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
