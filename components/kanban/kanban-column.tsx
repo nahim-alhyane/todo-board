@@ -46,7 +46,7 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
   const config = statusConfig[column.id];
 
   return (
-    <div className="flex flex-col min-w-[340px] max-w-[340px]">
+    <div className="flex flex-col w-full min-w-0">
       {/* Column header */}
       <div className="relative mb-4 group">
         <div

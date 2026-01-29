@@ -170,11 +170,11 @@ export function KanbanBoard() {
 
       {/* Kanban columns */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 overflow-x-auto pb-4 px-1">
+        <div className="grid grid-cols-5 gap-4 pb-4 px-1">
           {columns.map((column, index) => (
             <div
               key={column.id}
-              className="animate-slide-up"
+              className="animate-slide-up min-w-0"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <KanbanColumn column={column} />

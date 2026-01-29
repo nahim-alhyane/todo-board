@@ -16,19 +16,17 @@ export default function Home() {
         <div className="mb-8 sm:mb-12 flex items-start justify-between gap-4 animate-slide-down">
           <div className="flex-1">
             <div className="inline-flex items-baseline gap-3 mb-3">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
-                <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-in">
-                  Todo Board
-                </span>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground animate-in">
+                Todo Board
               </h1>
-              <span className="text-base sm:text-lg font-mono text-primary/60 animate-in stagger-1">
+              <span className="text-base sm:text-lg font-mono text-muted-foreground animate-in stagger-1">
                 v2.0
               </span>
             </div>
             <p className="text-muted-foreground text-base sm:text-lg max-w-2xl leading-relaxed animate-in stagger-2">
               Kanban-style task dashboard for{" "}
-              <span className="font-semibold text-primary">Nahim</span> &{" "}
-              <span className="font-semibold text-accent">Vanessa</span>
+              <span className="font-semibold text-foreground">Nahim</span> &{" "}
+              <span className="font-semibold text-foreground">Vanessa</span>
             </p>
             <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/5 border border-primary/20 animate-in stagger-3">
               <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />

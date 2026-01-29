@@ -27,8 +27,8 @@
     --radius: 0.75rem;
 
     /* Status colors - light mode */
-    --status-backlog: 220 13% 91%;
-    --status-backlog-fg: 220 9% 46%;
+    --status-backlog: 220 13% 85%;
+    --status-backlog-fg: 220 15% 25%;
     --status-todo: 217 91% 60%;
     --status-todo-fg: 0 0% 100%;
     --status-progress: 38 92% 50%;
@@ -62,8 +62,8 @@
     --ring: 262 90% 65%;
 
     /* Status colors - dark mode */
-    --status-backlog: 220 9% 20%;
-    --status-backlog-fg: 220 13% 75%;
+    --status-backlog: 220 15% 25%;
+    --status-backlog-fg: 220 15% 90%;
     --status-todo: 217 91% 60%;
     --status-todo-fg: 0 0% 100%;
     --status-progress: 38 92% 50%;
