@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { KanbanColumn } from "./kanban-column";
-import { Todo, TodoStatus, KanbanColumn as KanbanColumnType, Assignee } from "./types";
+import { Todo, TodoStatus, KanbanColumn as KanbanColumnType, AssignedTo } from "./types";
 import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, Users } from "lucide-react";
+import { User, Users, Plus } from "lucide-react";
+import { TodoFormSheet } from "@/components/todo/todo-form-sheet";
 
 const COLUMNS: { id: TodoStatus; title: string }[] = [
   { id: "BACKLOG", title: "Backlog" },
@@ -20,7 +21,9 @@ const COLUMNS: { id: TodoStatus; title: string }[] = [
 export function KanbanBoard() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [assigneeFilter, setAssigneeFilter] = useState<Assignee | "all">("all");
+  const [assigneeFilter, setAssigneeFilter] = useState<AssignedTo | "all">("all");
+  const [formOpen, setFormOpen] = useState(false);
+  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
 
   useEffect(() => {
     fetchTodos();
@@ -50,19 +53,36 @@ export function KanbanBoard() {
 
       if (todosError) throw todosError;
 
-      const { data: subtasksData, error: subtasksError } = await supabase
-        .from("subtasks")
+      const { data: tasksData, error: tasksError } = await supabase
+        .from("tasks")
         .select("*")
         .order("position");
 
-      if (subtasksError) throw subtasksError;
+      if (tasksError) throw tasksError;
 
-      const todosWithSubtasks: Todo[] = (todosData || []).map((todo: any) => ({
+      const { data: stakeholdersData, error: stakeholdersError } = await supabase
+        .from("stakeholders")
+        .select(`
+          *,
+          person:persons(*)
+        `);
+
+      if (stakeholdersError) throw stakeholdersError;
+
+      const { data: attachmentsData, error: attachmentsError } = await supabase
+        .from("attachments")
+        .select("*");
+
+      if (attachmentsError) throw attachmentsError;
+
+      const todosWithRelations: Todo[] = (todosData || []).map((todo: any) => ({
         ...todo,
-        subtasks: (subtasksData || []).filter((st: any) => st.todo_id === todo.id),
+        tasks: (tasksData || []).filter((t: any) => t.todo_id === todo.id),
+        stakeholders: (stakeholdersData || []).filter((s: any) => s.todo_id === todo.id),
+        attachments: (attachmentsData || []).filter((a: any) => a.todo_id === todo.id),
       }));
 
-      setTodos(todosWithSubtasks);
+      setTodos(todosWithRelations);
     } catch (error) {
       console.error("Error fetching todos:", error);
     } finally {
@@ -112,12 +132,29 @@ export function KanbanBoard() {
   const getColumns = (): KanbanColumnType[] => {
     const filteredTodos = assigneeFilter === "all"
       ? todos
-      : todos.filter((todo) => todo.assignee === assigneeFilter);
+      : todos.filter((todo) => todo.assigned_to === assigneeFilter);
 
     return COLUMNS.map((col) => ({
       ...col,
       todos: filteredTodos.filter((todo) => todo.status === col.id),
     }));
+  };
+
+  const handleTodoClick = (todo: Todo) => {
+    setSelectedTodo(todo);
+    setFormOpen(true);
+  };
+
+  const handleFormSuccess = () => {
+    fetchTodos();
+    setSelectedTodo(null);
+  };
+
+  const handleFormClose = (open: boolean) => {
+    setFormOpen(open);
+    if (!open) {
+      setSelectedTodo(null);
+    }
   };
 
   if (loading) {
@@ -132,12 +169,13 @@ export function KanbanBoard() {
 
   return (
     <div className="space-y-6">
-      {/* Filter section */}
-      <div className="flex flex-wrap items-center gap-3 p-4 rounded-2xl bg-card border border-border/50 shadow-sm">
-        <span className="text-sm font-semibold text-foreground/80 tracking-wide uppercase">
-          Filter:
-        </span>
-        <div className="flex flex-wrap gap-2">
+      {/* Action bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/50 shadow-sm">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-semibold text-foreground/80 tracking-wide uppercase">
+            Filter:
+          </span>
+          <div className="flex flex-wrap gap-2">
           <Button
             variant={assigneeFilter === "all" ? "default" : "outline"}
             size="sm"
@@ -165,7 +203,18 @@ export function KanbanBoard() {
             <User className="h-4 w-4 mr-2" />
             Vanessa
           </Button>
+          </div>
         </div>
+        <Button
+          onClick={() => {
+            setSelectedTodo(null);
+            setFormOpen(true);
+          }}
+          className="rounded-xl font-medium transition-all duration-300 hover:scale-105"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Todo
+        </Button>
       </div>
 
       {/* Kanban columns */}
@@ -177,11 +226,19 @@ export function KanbanBoard() {
               className="animate-slide-up min-w-0"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <KanbanColumn column={column} />
+              <KanbanColumn column={column} onTodoClick={handleTodoClick} />
             </div>
           ))}
         </div>
       </DragDropContext>
+
+      {/* Todo form sheet */}
+      <TodoFormSheet
+        open={formOpen}
+        onOpenChange={handleFormClose}
+        todo={selectedTodo}
+        onSuccess={handleFormSuccess}
+      />
     </div>
   );
 }

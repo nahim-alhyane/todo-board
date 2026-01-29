@@ -12,11 +12,11 @@ interface TodoCardProps {
 }
 
 export function TodoCard({ todo, isDragging }: TodoCardProps) {
-  const completedSubtasks = todo.subtasks?.filter((st) => st.completed).length || 0;
-  const totalSubtasks = todo.subtasks?.length || 0;
-  const hasSubtasks = totalSubtasks > 0;
-  const allSubtasksComplete = hasSubtasks && completedSubtasks === totalSubtasks;
-  const progress = hasSubtasks ? (completedSubtasks / totalSubtasks) * 100 : 0;
+  const completedTasks = todo.tasks?.filter((t) => t.completed).length || 0;
+  const totalTasks = todo.tasks?.length || 0;
+  const hasTasks = totalTasks > 0;
+  const allTasksComplete = hasTasks && completedTasks === totalTasks;
+  const progress = hasTasks ? (completedTasks / totalTasks) * 100 : 0;
 
   const getAssigneeConfig = (assignee: string | null) => {
     if (assignee === "nahim") {
@@ -37,7 +37,7 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
     };
   };
 
-  const assigneeConfig = getAssigneeConfig(todo.assignee);
+  const assigneeConfig = getAssigneeConfig(todo.assigned_to);
 
   return (
     <Card
@@ -55,7 +55,7 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
           <CardTitle className="text-base font-semibold leading-tight flex-1 group-hover:text-primary transition-colors duration-300">
             {todo.title}
           </CardTitle>
-          {todo.assignee && (
+          {todo.assigned_to && (
             <Badge
               variant="secondary"
               className={cn(
@@ -65,13 +65,13 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
               )}
             >
               <User className="h-3.5 w-3.5" />
-              <span className="capitalize">{todo.assignee}</span>
+              <span className="capitalize">{todo.assigned_to}</span>
             </Badge>
           )}
         </div>
       </CardHeader>
 
-      {(todo.description || hasSubtasks) && (
+      {(todo.description || hasTasks) && (
         <CardContent className="space-y-3 relative">
           {todo.description && (
             <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
@@ -79,14 +79,14 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
             </p>
           )}
 
-          {hasSubtasks && (
+          {hasTasks && (
             <div className="space-y-2">
-              {/* Subtask progress bar */}
+              {/* Task progress bar */}
               <div className="relative h-2 rounded-full bg-muted overflow-hidden">
                 <div
                   className={cn(
                     "absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out",
-                    allSubtasksComplete
+                    allTasksComplete
                       ? "bg-gradient-to-r from-green-500 to-emerald-500"
                       : "bg-gradient-to-r from-primary to-accent"
                   )}
@@ -94,13 +94,13 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
                 />
               </div>
 
-              {/* Subtask counter */}
+              {/* Task counter */}
               <div className="flex items-center gap-2 text-sm">
-                {allSubtasksComplete ? (
+                {allTasksComplete ? (
                   <>
                     <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-500" />
                     <span className="font-medium text-green-600 dark:text-green-500">
-                      All subtasks complete
+                      All tasks complete
                     </span>
                     <Sparkles className="h-3.5 w-3.5 text-green-600 dark:text-green-500 animate-pulse" />
                   </>
@@ -108,7 +108,7 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
                   <>
                     <Circle className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground font-medium">
-                      {completedSubtasks}/{totalSubtasks} subtasks
+                      {completedTasks}/{totalTasks} tasks
                     </span>
                   </>
                 )}

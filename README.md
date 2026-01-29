@@ -1,4 +1,4 @@
-# Todo Board
+# Todo Board v2.0
 
 A modern Kanban-style task dashboard for Nahim & Vanessa, built with Next.js and Supabase.
 
@@ -6,18 +6,25 @@ A modern Kanban-style task dashboard for Nahim & Vanessa, built with Next.js and
 
 - **Kanban Board**: Standard 5-lane workflow (Backlog, To Do, In Progress, Blocked, Done)
 - **Drag & Drop**: Move tasks between lanes with smooth animations
-- **Task Management**: Create todos with descriptions and subtasks/checklists
+- **Slide-over Form**: Beautiful slide-in panel for creating and editing todos
+- **Rich Task Management**:
+  - Markdown descriptions for todos and tasks
+  - Task checklists with name, title, and description
+  - File attachments with Supabase Storage
+  - Stakeholder management with email notifications
 - **Assignees**: Assign tasks to Nahim or Vanessa
 - **Projects**: Organize tasks into projects/groups with custom colors
 - **Realtime Updates**: See changes instantly with Supabase Realtime
 - **Filtering**: Filter tasks by assignee
+- **Click to Edit**: Click any todo card to edit in slide-over panel
 
 ## Tech Stack
 
 - **Framework**: Next.js 14 (App Router)
-- **Database**: Supabase (Postgres + Realtime)
+- **Database**: Supabase (Postgres + Realtime + Storage)
 - **Styling**: Tailwind CSS + shadcn/ui
 - **Drag & Drop**: @hello-pangea/dnd
+- **Markdown Editor**: @uiw/react-md-editor
 - **Deployment**: Vercel
 
 ## Getting Started
@@ -44,6 +51,7 @@ npm install
 3. Set up Supabase:
    - Create a new project at [supabase.com](https://supabase.com)
    - Run the SQL schema from `supabase-schema.sql` in your Supabase SQL editor
+   - Follow instructions in `SUPABASE_SETUP.md` to create the Storage bucket
    - Copy your project URL and anon key
 
 4. Configure environment variables:
@@ -66,13 +74,16 @@ npm run dev
 
 ## Database Schema
 
-The application uses three main tables:
+The application uses six main tables:
 
 - **projects**: Organize todos into groups with custom colors
-- **todos**: Task items with status, assignee, and position
-- **subtasks**: Checklist items for todos
+- **todos**: Task items with status, assigned_to, and position
+- **tasks**: Enhanced checklist items with name, title, description
+- **persons**: User information (firstname, lastname, email, language)
+- **stakeholders**: Links persons to todos with notification preferences
+- **attachments**: File metadata for uploaded attachments
 
-See `supabase-schema.sql` for the complete schema definition.
+See `supabase-schema.sql` for the complete schema definition and `CHANGELOG.md` for migration details.
 
 ## Development
 
