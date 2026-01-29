@@ -132,40 +132,53 @@ export function KanbanBoard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-muted-foreground">
-          Filter by assignee:
+      {/* Filter section */}
+      <div className="flex flex-wrap items-center gap-3 p-4 rounded-2xl bg-card border border-border/50 shadow-sm">
+        <span className="text-sm font-semibold text-foreground/80 tracking-wide uppercase">
+          Filter:
         </span>
-        <Button
-          variant={assigneeFilter === "all" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setAssigneeFilter("all")}
-        >
-          <Users className="h-4 w-4 mr-1" />
-          All
-        </Button>
-        <Button
-          variant={assigneeFilter === "nahim" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setAssigneeFilter("nahim")}
-        >
-          <User className="h-4 w-4 mr-1" />
-          Nahim
-        </Button>
-        <Button
-          variant={assigneeFilter === "vanessa" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setAssigneeFilter("vanessa")}
-        >
-          <User className="h-4 w-4 mr-1" />
-          Vanessa
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={assigneeFilter === "all" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setAssigneeFilter("all")}
+            className="rounded-xl font-medium transition-all duration-300 hover:scale-105"
+          >
+            <Users className="h-4 w-4 mr-2" />
+            All Tasks
+          </Button>
+          <Button
+            variant={assigneeFilter === "nahim" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setAssigneeFilter("nahim")}
+            className="rounded-xl font-medium transition-all duration-300 hover:scale-105"
+          >
+            <User className="h-4 w-4 mr-2" />
+            Nahim
+          </Button>
+          <Button
+            variant={assigneeFilter === "vanessa" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setAssigneeFilter("vanessa")}
+            className="rounded-xl font-medium transition-all duration-300 hover:scale-105"
+          >
+            <User className="h-4 w-4 mr-2" />
+            Vanessa
+          </Button>
+        </div>
       </div>
 
+      {/* Kanban columns */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {columns.map((column) => (
-            <KanbanColumn key={column.id} column={column} />
+        <div className="flex gap-4 overflow-x-auto pb-4 px-1">
+          {columns.map((column, index) => (
+            <div
+              key={column.id}
+              className="animate-slide-up"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <KanbanColumn column={column} />
+            </div>
           ))}
         </div>
       </DragDropContext>
