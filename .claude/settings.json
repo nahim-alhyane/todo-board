@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(git:*)",
+      "Bash(open:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(rm:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(pwd)",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write",
+      "mcp__context7__*",
+      "mcp__sequential-thinking__*",
+      "WebSearch"
+    ],
+    "deny": [],
+    "additionalDirectories": [
+      "{DEVDIRECTORY}"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "_comment": "Team shared settings - base permissions. Platform-specific settings extend this.",
+  "enabledMcpjsonServers": [
+    "context7",
+    "sequential-thinking"
+  ]
+}
