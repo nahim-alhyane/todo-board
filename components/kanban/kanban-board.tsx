@@ -58,6 +58,13 @@ export function KanbanBoard() {
           fetchTodos();
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "subtasks" },
+        () => {
+          fetchTodos();
+        }
+      )
       .subscribe();
 
     return () => {
@@ -96,9 +103,17 @@ export function KanbanBoard() {
 
       if (attachmentsError) throw attachmentsError;
 
+      const { data: subtasksData, error: subtasksError } = await supabase
+        .from("subtasks")
+        .select("*")
+        .order("created_at");
+
+      if (subtasksError) throw subtasksError;
+
       const todosWithRelations: Todo[] = (todosData || []).map((todo: any) => ({
         ...todo,
         tasks: (tasksData || []).filter((t: any) => t.todo_id === todo.id),
+        subtasks: (subtasksData || []).filter((s: any) => s.todo_id === todo.id),
         stakeholders: (stakeholdersData || []).filter((s: any) => s.todo_id === todo.id),
         attachments: (attachmentsData || []).filter((a: any) => a.todo_id === todo.id),
       }));

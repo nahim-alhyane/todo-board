@@ -45,11 +45,19 @@ interface StakeholderForm {
   notify_by_email: boolean;
 }
 
+interface SubtaskForm {
+  id?: string;
+  title: string;
+  completed: boolean;
+}
+
 export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormSheetProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [assignedTo, setAssignedTo] = useState<AssignedTo>(null);
   const [tasks, setTasks] = useState<TaskForm[]>([]);
+  const [subtasks, setSubtasks] = useState<SubtaskForm[]>([]);
+  const [subtaskInput, setSubtaskInput] = useState("");
   const [stakeholders, setStakeholders] = useState<StakeholderForm[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [persons, setPersons] = useState<Person[]>([]);
@@ -81,6 +89,7 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
           }))
         );
         setAttachments(todo.attachments || []);
+        fetchSubtasks(todo.id);
       } else {
         resetForm();
       }
@@ -92,6 +101,8 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
     setDescription("");
     setAssignedTo(null);
     setTasks([]);
+    setSubtasks([]);
+    setSubtaskInput("");
     setStakeholders([]);
     setAttachments([]);
   };
@@ -100,6 +111,24 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
     const { data, error } = await supabase.from("persons").select("*");
     if (!error && data) {
       setPersons(data);
+    }
+  };
+
+  const fetchSubtasks = async (todoId: string) => {
+    const { data, error } = await supabase
+      .from("subtasks")
+      .select("*")
+      .eq("todo_id", todoId)
+      .order("created_at", { ascending: true });
+
+    if (!error && data) {
+      setSubtasks(
+        data.map((s) => ({
+          id: s.id,
+          title: s.title,
+          completed: s.completed,
+        }))
+      );
     }
   };
 
@@ -146,6 +175,56 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
     const updated = [...stakeholders];
     updated[index] = { ...updated[index], [field]: value };
     setStakeholders(updated);
+  };
+
+  const addSubtask = () => {
+    if (subtaskInput.trim()) {
+      setSubtasks([
+        ...subtasks,
+        {
+          title: subtaskInput.trim(),
+          completed: false,
+        },
+      ]);
+      setSubtaskInput("");
+    }
+  };
+
+  const handleSubtaskKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addSubtask();
+    }
+  };
+
+  const toggleSubtask = async (index: number) => {
+    const subtask = subtasks[index];
+    const newCompleted = !subtask.completed;
+
+    // Update local state
+    const updated = [...subtasks];
+    updated[index] = { ...updated[index], completed: newCompleted };
+    setSubtasks(updated);
+
+    // If subtask has an ID (already saved), update in database
+    if (subtask.id && todo) {
+      await supabase
+        .from("subtasks")
+        .update({ completed: newCompleted })
+        .eq("id", subtask.id);
+    }
+  };
+
+  const removeSubtask = async (index: number) => {
+    const subtask = subtasks[index];
+
+    // If subtask has an ID (already saved), delete from database
+    if (subtask.id && todo) {
+      await supabase.from("subtasks").delete().eq("id", subtask.id);
+    }
+
+    // Update local state
+    setSubtasks(subtasks.filter((_, i) => i !== index));
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -313,6 +392,38 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
             todo_id: todoId,
             person_id: s.person_id,
             notify_by_email: s.notify_by_email,
+          }))
+        );
+      }
+
+      // Handle subtasks
+      if (todo) {
+        // Delete removed subtasks
+        const existingSubtaskIds = subtasks.filter((s) => s.id).map((s) => s.id);
+        const existingSubtasks = await supabase
+          .from("subtasks")
+          .select("id")
+          .eq("todo_id", todo.id);
+
+        if (existingSubtasks.data) {
+          const subtasksToDelete = existingSubtasks.data
+            .filter((s) => !existingSubtaskIds.includes(s.id))
+            .map((s) => s.id);
+
+          if (subtasksToDelete.length > 0) {
+            await supabase.from("subtasks").delete().in("id", subtasksToDelete);
+          }
+        }
+      }
+
+      // Insert new subtasks (ones without IDs)
+      const newSubtasks = subtasks.filter((s) => !s.id);
+      if (newSubtasks.length > 0) {
+        await supabase.from("subtasks").insert(
+          newSubtasks.map((s) => ({
+            todo_id: todoId,
+            title: s.title,
+            completed: s.completed,
           }))
         );
       }
@@ -529,6 +640,59 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
                   />
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Subtasks */}
+          <div className="space-y-2">
+            <Label>Subtasks</Label>
+            <div className="space-y-2">
+              <Input
+                placeholder="Add a subtask (press Enter)"
+                value={subtaskInput}
+                onChange={(e) => setSubtaskInput(e.target.value)}
+                onKeyDown={handleSubtaskKeyDown}
+              />
+              <div className="space-y-2">
+                {subtasks.map((subtask, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 p-2 border rounded-lg bg-card"
+                  >
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => toggleSubtask(index)}
+                      className="h-5 w-5 p-0"
+                    >
+                      {subtask.completed ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <div className="h-4 w-4 border-2 border-muted-foreground rounded" />
+                      )}
+                    </Button>
+                    <span
+                      className={`flex-1 text-sm ${
+                        subtask.completed
+                          ? "line-through text-muted-foreground"
+                          : ""
+                      }`}
+                    >
+                      {subtask.title}
+                    </span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeSubtask(index)}
+                      className="h-5 w-5 p-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 

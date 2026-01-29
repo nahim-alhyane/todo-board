@@ -45,6 +45,15 @@ export interface Attachment {
   created_at: string;
 }
 
+// Subtask entity (simple checklist items)
+export interface Subtask {
+  id: string;
+  todo_id: string;
+  title: string;
+  completed: boolean;
+  created_at: string;
+}
+
 // Todo entity (updated)
 export interface Todo {
   id: string;
@@ -57,6 +66,7 @@ export interface Todo {
   created_at: string;
   updated_at: string;
   tasks?: Task[];
+  subtasks?: Subtask[];
   stakeholders?: Stakeholder[];
   attachments?: Attachment[];
 }
@@ -78,4 +88,3 @@ export interface KanbanColumn {
 
 // Backward compatibility
 export type Assignee = AssignedTo;
-export type Subtask = Task;

@@ -17,6 +17,9 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
   const hasTasks = totalTasks > 0;
   const allTasksComplete = hasTasks && completedTasks === totalTasks;
   const progress = hasTasks ? (completedTasks / totalTasks) * 100 : 0;
+  const completedSubtasks = todo.subtasks?.filter((s) => s.completed).length || 0;
+  const totalSubtasks = todo.subtasks?.length || 0;
+  const hasSubtasks = totalSubtasks > 0;
   const stakeholderCount = todo.stakeholders?.length || 0;
   const attachmentCount = todo.attachments?.length || 0;
 
@@ -73,7 +76,7 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
         </div>
       </CardHeader>
 
-      {(todo.description || hasTasks || stakeholderCount > 0 || attachmentCount > 0) && (
+      {(todo.description || hasTasks || hasSubtasks || stakeholderCount > 0 || attachmentCount > 0) && (
         <CardContent className="space-y-3 relative">
           {todo.description && (
             <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
@@ -115,6 +118,15 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
                   </>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Subtask counter */}
+          {hasSubtasks && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="font-medium">
+                {completedSubtasks}/{totalSubtasks} subtasks
+              </span>
             </div>
           )}
 
