@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Todo } from "./types";
 import { User, CheckCircle2, Circle, Sparkles, Paperclip, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 interface TodoCardProps {
   todo: Todo;
@@ -79,9 +80,22 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
       {(todo.description || hasTasks || hasSubtasks || stakeholderCount > 0 || attachmentCount > 0) && (
         <CardContent className="space-y-2 sm:space-y-3 relative p-3 sm:p-4 pt-0 sm:pt-0">
           {todo.description && (
-            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-              {todo.description}
-            </p>
+            <div className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed prose prose-sm dark:prose-invert max-w-none">
+              <ReactMarkdown
+                components={{
+                  p: ({ node, ...props }) => <p className="m-0" {...props} />,
+                  a: ({ node, ...props }) => <a className="text-primary hover:underline" {...props} />,
+                  strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
+                  em: ({ node, ...props }) => <em className="italic" {...props} />,
+                  code: ({ node, ...props }) => <code className="bg-muted px-1 py-0.5 rounded text-xs" {...props} />,
+                  ul: ({ node, ...props }) => <ul className="list-disc list-inside m-0" {...props} />,
+                  ol: ({ node, ...props }) => <ol className="list-decimal list-inside m-0" {...props} />,
+                  li: ({ node, ...props }) => <li className="m-0" {...props} />,
+                }}
+              >
+                {todo.description}
+              </ReactMarkdown>
+            </div>
           )}
 
           {hasTasks && (

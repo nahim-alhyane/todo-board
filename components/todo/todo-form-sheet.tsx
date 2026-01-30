@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { Todo, Task, Stakeholder, Person, Attachment, AssignedTo } from "@/components/kanban/types";
 import { supabase } from "@/lib/supabase/client";
-import { X, Plus, Upload, FileText, Trash2, Check } from "lucide-react";
+import { X, Plus, Upload, FileText, Trash2, Check, Eye, Edit as EditIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
@@ -64,6 +64,7 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showNewPersonForm, setShowNewPersonForm] = useState(false);
+  const [descriptionPreview, setDescriptionPreview] = useState<"edit" | "live" | "preview">("live");
   const [newPerson, setNewPerson] = useState({
     firstname: "",
     lastname: "",
@@ -523,12 +524,46 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+              <div className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={descriptionPreview === "edit" ? "default" : "ghost"}
+                  onClick={() => setDescriptionPreview("edit")}
+                  className="h-8 px-2"
+                >
+                  <EditIcon className="h-3 w-3 mr-1" />
+                  Edit
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={descriptionPreview === "live" ? "default" : "ghost"}
+                  onClick={() => setDescriptionPreview("live")}
+                  className="h-8 px-2"
+                >
+                  <Eye className="h-3 w-3 mr-1" />
+                  Split
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={descriptionPreview === "preview" ? "default" : "ghost"}
+                  onClick={() => setDescriptionPreview("preview")}
+                  className="h-8 px-2"
+                >
+                  <Eye className="h-3 w-3 mr-1" />
+                  Preview
+                </Button>
+              </div>
+            </div>
             <div data-color-mode="light" className="dark:hidden">
               <MDEditor
                 value={description}
                 onChange={(val) => setDescription(val || "")}
-                preview="edit"
+                preview={descriptionPreview}
                 height={180}
               />
             </div>
@@ -536,7 +571,7 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
               <MDEditor
                 value={description}
                 onChange={(val) => setDescription(val || "")}
-                preview="edit"
+                preview={descriptionPreview}
                 height={180}
               />
             </div>
