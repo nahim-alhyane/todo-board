@@ -16,7 +16,17 @@ import {
 } from "@/components/ui/sheet";
 import { Todo, Task, Stakeholder, Person, Attachment, AssignedTo } from "@/components/kanban/types";
 import { supabase } from "@/lib/supabase/client";
-import { X, Plus, Upload, FileText, Trash2, Check, Eye, Edit as EditIcon } from "lucide-react";
+import { X, Plus, Upload, FileText, Trash2, Check, Eye, Edit as EditIcon, AlertTriangle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import dynamic from "next/dynamic";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
@@ -65,6 +75,7 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
   const [uploading, setUploading] = useState(false);
   const [showNewPersonForm, setShowNewPersonForm] = useState(false);
   const [descriptionPreview, setDescriptionPreview] = useState<"edit" | "live" | "preview">("live");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [newPerson, setNewPerson] = useState({
     firstname: "",
     lastname: "",
@@ -375,9 +386,6 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
 
   const handleDelete = async () => {
     if (!todo) return;
-
-    const confirmed = window.confirm("Are you sure you want to delete this todo? This action cannot be undone.");
-    if (!confirmed) return;
 
     setLoading(true);
 
@@ -1014,10 +1022,11 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
               <Button
                 type="button"
                 variant="destructive"
-                onClick={handleDelete}
+                onClick={() => setShowDeleteDialog(true)}
                 disabled={loading}
                 className="w-full sm:w-auto sm:mr-auto h-10 sm:h-9"
               >
+                <Trash2 className="w-4 h-4 mr-2" />
                 Delete
               </Button>
             )}
@@ -1041,6 +1050,30 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
           </SheetFooter>
         </form>
       </SheetContent>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              Delete Todo
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{todo?.title}"? This will also delete all associated tasks, subtasks, stakeholders, and attachments. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
   );
 }
