@@ -297,7 +297,7 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
         const filePath = `${todo.id}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
-          .from("todo-attachments")
+          .from("attachments")
           .upload(filePath, file);
 
         if (uploadError) throw uploadError;
@@ -334,7 +334,7 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
     try {
       // Delete from storage
       const { error: storageError } = await supabase.storage
-        .from("todo-attachments")
+        .from("attachments")
         .remove([attachment.storage_path]);
 
       if (storageError) throw storageError;
