@@ -72,6 +72,24 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
     language_code: "en",
   });
 
+  // Handle browser back button to close sheet instead of navigating away
+  useEffect(() => {
+    if (open) {
+      // Push a state when sheet opens
+      window.history.pushState({ sheetOpen: true }, "");
+      
+      const handlePopState = (e: PopStateEvent) => {
+        // Close the sheet when back button is pressed
+        onOpenChange(false);
+      };
+      
+      window.addEventListener("popstate", handlePopState);
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
+    }
+  }, [open, onOpenChange]);
+
   useEffect(() => {
     if (open) {
       fetchPersons();
@@ -352,6 +370,48 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
     } catch (error) {
       console.error("Error deleting attachment:", error);
       alert("Failed to delete attachment");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!todo) return;
+
+    const confirmed = window.confirm("Are you sure you want to delete this todo? This action cannot be undone.");
+    if (!confirmed) return;
+
+    setLoading(true);
+
+    try {
+      // Delete tasks
+      if (todo.tasks && todo.tasks.length > 0) {
+        await supabase.from("tasks").delete().eq("todo_id", todo.id);
+      }
+
+      // Delete stakeholders
+      await supabase.from("stakeholders").delete().eq("todo_id", todo.id);
+
+      // Delete subtasks
+      await supabase.from("subtasks").delete().eq("todo_id", todo.id);
+
+      // Delete attachments from storage and database
+      if (todo.attachments && todo.attachments.length > 0) {
+        const storagePaths = todo.attachments.map((a) => a.storage_path);
+        await supabase.storage.from("attachments").remove(storagePaths);
+        await supabase.from("attachments").delete().eq("todo_id", todo.id);
+      }
+
+      // Delete the todo
+      const { error } = await supabase.from("todos").delete().eq("id", todo.id);
+
+      if (error) throw error;
+
+      onSuccess?.();
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error deleting todo:", error);
+      alert("Failed to delete todo");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -950,21 +1010,34 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
           )}
 
           <SheetFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="w-full sm:w-auto h-10 sm:h-9"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full sm:w-auto h-10 sm:h-9"
-            >
-              {loading ? "Saving..." : todo ? "Update" : "Create"}
-            </Button>
+            {todo && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={loading}
+                className="w-full sm:w-auto sm:mr-auto h-10 sm:h-9"
+              >
+                Delete
+              </Button>
+            )}
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="w-full sm:w-auto h-10 sm:h-9"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full sm:w-auto h-10 sm:h-9"
+              >
+                {loading ? "Saving..." : todo ? "Update" : "Create"}
+              </Button>
+            </div>
           </SheetFooter>
         </form>
       </SheetContent>
