@@ -32,11 +32,8 @@ export default function Home() {
 
           {/* Theme toggle + Realtime status */}
           <div className="flex items-center gap-3 animate-in stagger-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/20">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span className="text-xs font-medium text-primary">
-                Realtime sync
-              </span>
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 backdrop-blur-sm border border-border/50 flex items-center justify-center" title="Realtime sync enabled">
+              <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
             </div>
             <ThemeToggle />
           </div>
