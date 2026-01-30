@@ -63,6 +63,13 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
   const [persons, setPersons] = useState<Person[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showNewPersonForm, setShowNewPersonForm] = useState(false);
+  const [newPerson, setNewPerson] = useState({
+    firstname: "",
+    lastname: "",
+    email: "",
+    language_code: "en",
+  });
 
   useEffect(() => {
     if (open) {
@@ -105,6 +112,13 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
     setSubtaskInput("");
     setStakeholders([]);
     setAttachments([]);
+    setShowNewPersonForm(false);
+    setNewPerson({
+      firstname: "",
+      lastname: "",
+      email: "",
+      language_code: "en",
+    });
   };
 
   const fetchPersons = async () => {
@@ -175,6 +189,49 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
     const updated = [...stakeholders];
     updated[index] = { ...updated[index], [field]: value };
     setStakeholders(updated);
+  };
+
+  const handleCreatePerson = async () => {
+    if (!newPerson.firstname.trim() || !newPerson.lastname.trim()) {
+      alert("Firstname and lastname are required");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("persons")
+        .insert({
+          firstname: newPerson.firstname,
+          lastname: newPerson.lastname,
+          email: newPerson.email || null,
+          language_code: newPerson.language_code,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setPersons([...persons, data]);
+      setNewPerson({
+        firstname: "",
+        lastname: "",
+        email: "",
+        language_code: "en",
+      });
+      setShowNewPersonForm(false);
+
+      // Add the new person as a stakeholder
+      setStakeholders([
+        ...stakeholders,
+        {
+          person_id: data.id,
+          notify_by_email: false,
+        },
+      ]);
+    } catch (error) {
+      console.error("Error creating person:", error);
+      alert("Failed to create person");
+    }
   };
 
   const addSubtask = () => {
@@ -506,22 +563,117 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Stakeholders</Label>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={addStakeholder}
-                disabled={persons.length === 0}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowNewPersonForm(!showNewPersonForm)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Person
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={addStakeholder}
+                  disabled={persons.length === 0}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Stakeholder
+                </Button>
+              </div>
             </div>
-            {persons.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No persons available. Create persons first.
-              </p>
+
+            {/* New Person Form */}
+            {showNewPersonForm && (
+              <div className="p-3 border rounded-lg bg-muted/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="font-semibold">New Person</Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowNewPersonForm(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="new-firstname" className="text-xs">
+                      First Name *
+                    </Label>
+                    <Input
+                      id="new-firstname"
+                      value={newPerson.firstname}
+                      onChange={(e) =>
+                        setNewPerson({ ...newPerson, firstname: e.target.value })
+                      }
+                      placeholder="John"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="new-lastname" className="text-xs">
+                      Last Name *
+                    </Label>
+                    <Input
+                      id="new-lastname"
+                      value={newPerson.lastname}
+                      onChange={(e) =>
+                        setNewPerson({ ...newPerson, lastname: e.target.value })
+                      }
+                      placeholder="Doe"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="new-email" className="text-xs">
+                    Email
+                  </Label>
+                  <Input
+                    id="new-email"
+                    type="email"
+                    value={newPerson.email}
+                    onChange={(e) =>
+                      setNewPerson({ ...newPerson, email: e.target.value })
+                    }
+                    placeholder="john.doe@example.com"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="new-language" className="text-xs">
+                    Language
+                  </Label>
+                  <Select
+                    value={newPerson.language_code}
+                    onValueChange={(val) =>
+                      setNewPerson({ ...newPerson, language_code: val })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="fr">French</SelectItem>
+                      <SelectItem value="es">Spanish</SelectItem>
+                      <SelectItem value="de">German</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleCreatePerson}
+                  className="w-full"
+                >
+                  Create Person
+                </Button>
+              </div>
             )}
+
             <div className="space-y-2">
               {stakeholders.map((stakeholder, index) => (
                 <div

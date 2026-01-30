@@ -53,6 +53,13 @@ export function KanbanBoard() {
       )
       .on(
         "postgres_changes",
+        { event: "*", schema: "public", table: "persons" },
+        () => {
+          fetchTodos();
+        }
+      )
+      .on(
+        "postgres_changes",
         { event: "*", schema: "public", table: "attachments" },
         () => {
           fetchTodos();

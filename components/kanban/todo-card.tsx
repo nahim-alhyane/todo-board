@@ -134,9 +134,40 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
           {(stakeholderCount > 0 || attachmentCount > 0) && (
             <div className="flex items-center gap-3 pt-1">
               {stakeholderCount > 0 && (
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Users className="h-3.5 w-3.5" />
-                  <span className="font-medium">{stakeholderCount}</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    {todo.stakeholders?.slice(0, 3).map((stakeholder, idx) => {
+                      const person = stakeholder.person;
+                      if (!person) return null;
+                      const initials = `${person.firstname[0]}${person.lastname[0]}`.toUpperCase();
+                      const colors = [
+                        "bg-gradient-to-br from-rose-500 to-pink-500",
+                        "bg-gradient-to-br from-violet-500 to-purple-500",
+                        "bg-gradient-to-br from-amber-500 to-orange-500",
+                        "bg-gradient-to-br from-emerald-500 to-teal-500",
+                        "bg-gradient-to-br from-sky-500 to-blue-500",
+                      ];
+                      const colorClass = colors[idx % colors.length];
+
+                      return (
+                        <div
+                          key={stakeholder.id}
+                          className={cn(
+                            "h-7 w-7 rounded-full flex items-center justify-center text-white text-xs font-semibold border-2 border-background shadow-sm",
+                            colorClass
+                          )}
+                          title={`${person.firstname} ${person.lastname}`}
+                        >
+                          {initials}
+                        </div>
+                      );
+                    })}
+                    {stakeholderCount > 3 && (
+                      <div className="h-7 w-7 rounded-full flex items-center justify-center bg-muted text-muted-foreground text-xs font-semibold border-2 border-background">
+                        +{stakeholderCount - 3}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
               {attachmentCount > 0 && (
