@@ -1060,7 +1060,7 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
               Delete Todo
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{todo?.title}"? This will also delete all associated tasks, subtasks, stakeholders, and attachments. This action cannot be undone.
+              Are you sure you want to delete &ldquo;{todo?.title}&rdquo;? This will also delete all associated tasks, subtasks, stakeholders, and attachments. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
