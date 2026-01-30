@@ -28,16 +28,16 @@ export default function Home() {
               <span className="font-semibold text-foreground">Nahim</span> &{" "}
               <span className="font-semibold text-foreground">Vanessa</span>
             </p>
-            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/5 border border-primary/20 animate-in stagger-3">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span className="text-sm font-medium text-primary">
-                Realtime sync enabled
-              </span>
-            </div>
           </div>
 
-          {/* Theme toggle */}
-          <div className="animate-in stagger-2">
+          {/* Theme toggle + Realtime status */}
+          <div className="flex items-center gap-3 animate-in stagger-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/20">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span className="text-xs font-medium text-primary">
+                Realtime sync
+              </span>
+            </div>
             <ThemeToggle />
           </div>
         </div>
