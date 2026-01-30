@@ -212,9 +212,9 @@ export function KanbanBoard() {
   const columns = getColumns();
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Action bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-card border border-border/50 shadow-sm">
+    <div className="space-y-3 sm:space-y-6">
+      {/* Desktop Action bar - hidden on mobile */}
+      <div className="hidden sm:flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-card border border-border/50 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <span className="text-xs sm:text-sm font-semibold text-foreground/80 tracking-wide uppercase">
             Filter:
@@ -254,40 +254,74 @@ export function KanbanBoard() {
             setSelectedTodo(null);
             setFormOpen(true);
           }}
-          className="rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-xs sm:text-sm hidden sm:flex"
+          className="rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-xs sm:text-sm"
         >
           <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
           Add Todo
         </Button>
       </div>
 
-      {/* Mobile column selector tabs */}
-      <div className="flex sm:hidden overflow-x-auto gap-2 pb-2 px-1 scrollbar-hide">
-        {COLUMNS.map((column) => {
-          const columnData = columns.find(c => c.id === column.id);
-          const todoCount = columnData?.todos.length || 0;
+      {/* Mobile Filters - compact version */}
+      <div className="sm:hidden flex gap-2 px-1 overflow-x-auto scrollbar-hide pb-2">
+        <Button
+          variant={assigneeFilter === "all" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setAssigneeFilter("all")}
+          className="rounded-lg font-medium transition-all flex-shrink-0 h-8 text-xs"
+        >
+          <Users className="h-3 w-3 mr-1" />
+          All
+        </Button>
+        <Button
+          variant={assigneeFilter === "nahim" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setAssigneeFilter("nahim")}
+          className="rounded-lg font-medium transition-all flex-shrink-0 h-8 text-xs"
+        >
+          <User className="h-3 w-3 mr-1" />
+          Nahim
+        </Button>
+        <Button
+          variant={assigneeFilter === "vanessa" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setAssigneeFilter("vanessa")}
+          className="rounded-lg font-medium transition-all flex-shrink-0 h-8 text-xs"
+        >
+          <User className="h-3 w-3 mr-1" />
+          Vanessa
+        </Button>
+      </div>
 
-          return (
-            <button
-              key={column.id}
-              onClick={() => setMobileActiveColumn(column.id)}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium text-xs transition-all duration-300 whitespace-nowrap ${
-                mobileActiveColumn === column.id
-                  ? "bg-primary text-primary-foreground shadow-md"
-                  : "bg-card border border-border/50 text-muted-foreground hover:bg-accent"
-              }`}
-            >
-              {column.title}
-              <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
-                mobileActiveColumn === column.id
-                  ? "bg-primary-foreground/20 text-primary-foreground"
-                  : "bg-muted text-muted-foreground"
-              }`}>
-                {todoCount}
-              </span>
-            </button>
-          );
-        })}
+      {/* Mobile Lane Tabs - COMPLETELY NEW DESIGN */}
+      <div className="sm:hidden sticky top-0 z-30 bg-background/95 backdrop-blur-sm -mx-4 px-4 pb-3">
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+          {COLUMNS.map((column) => {
+            const columnData = columns.find(c => c.id === column.id);
+            const todoCount = columnData?.todos.length || 0;
+            const isActive = mobileActiveColumn === column.id;
+
+            return (
+              <button
+                key={column.id}
+                onClick={() => setMobileActiveColumn(column.id)}
+                className={`flex-shrink-0 px-3 py-2.5 rounded-lg font-semibold text-xs transition-all duration-200 whitespace-nowrap flex items-center gap-2 ${
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-lg scale-105"
+                    : "bg-card/80 border border-border/50 text-muted-foreground active:scale-95"
+                }`}
+              >
+                <span>{column.title.toUpperCase()}</span>
+                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                  isActive
+                    ? "bg-primary-foreground/20 text-primary-foreground"
+                    : "bg-muted/80 text-muted-foreground"
+                }`}>
+                  {todoCount}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Kanban columns */}
@@ -305,28 +339,32 @@ export function KanbanBoard() {
           ))}
         </div>
 
-        {/* Mobile: Single active column */}
-        <div className="sm:hidden pb-4 px-1">
+        {/* Mobile: Single active column - FULL WIDTH */}
+        <div className="sm:hidden pb-20">
           {columns
             .filter((column) => column.id === mobileActiveColumn)
             .map((column) => (
-              <div key={column.id} className="animate-slide-up">
-                <KanbanColumn column={column} onTodoClick={handleTodoClick} />
+              <div key={column.id} className="animate-slide-up px-1">
+                <KanbanColumn
+                  column={column}
+                  onTodoClick={handleTodoClick}
+                  isMobile={true}
+                />
               </div>
             ))}
         </div>
       </DragDropContext>
 
-      {/* Floating Action Button (Mobile) */}
+      {/* Floating Action Button (Mobile) - IMPROVED */}
       <button
         onClick={() => {
           setSelectedTodo(null);
           setFormOpen(true);
         }}
-        className="sm:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center z-40"
+        className="sm:hidden fixed bottom-8 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center z-50"
         aria-label="Add Todo"
       >
-        <Plus className="h-6 w-6" />
+        <Plus className="h-6 w-6" strokeWidth={2.5} />
       </button>
 
       {/* Todo form sheet */}

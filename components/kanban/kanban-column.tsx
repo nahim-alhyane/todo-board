@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 interface KanbanColumnProps {
   column: KanbanColumnType;
   onTodoClick: (todo: Todo) => void;
+  isMobile?: boolean;
 }
 
 const statusConfig = {
@@ -43,20 +44,24 @@ const statusConfig = {
   },
 };
 
-export function KanbanColumn({ column, onTodoClick }: KanbanColumnProps) {
+export function KanbanColumn({ column, onTodoClick, isMobile = false }: KanbanColumnProps) {
   const config = statusConfig[column.id];
 
   return (
     <div className="flex flex-col w-full min-w-0">
-      {/* Column header */}
-      <div className="relative mb-3 sm:mb-4 group">
+      {/* Column header - simplified on mobile */}
+      <div className={cn("relative mb-3 sm:mb-4 group", isMobile && "mb-3")}>
         <div
-          className="absolute inset-0 rounded-xl sm:rounded-2xl blur-md opacity-50 transition-opacity duration-300 group-hover:opacity-75"
+          className={cn(
+            "absolute inset-0 rounded-xl blur-md opacity-50 transition-opacity duration-300 group-hover:opacity-75",
+            !isMobile && "sm:rounded-2xl"
+          )}
           style={{ background: config.bg }}
         />
         <div
           className={cn(
-            "relative rounded-xl sm:rounded-2xl border-2 p-3 sm:p-4 font-bold text-xs sm:text-sm tracking-wide transition-all duration-300 hover:scale-[1.02]",
+            "relative rounded-xl border-2 p-3 font-bold text-sm tracking-wide transition-all duration-300",
+            !isMobile && "sm:rounded-2xl sm:p-4 hover:scale-[1.02]",
             config.borderColor
           )}
           style={{
@@ -67,7 +72,7 @@ export function KanbanColumn({ column, onTodoClick }: KanbanColumnProps) {
           <div className="flex items-center justify-between">
             <span className="uppercase">{column.title}</span>
             <div
-              className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full font-mono text-xs font-semibold shadow-sm"
+              className="px-3 py-1 rounded-full font-mono text-xs font-semibold shadow-sm"
               style={{
                 background: config.fg,
                 color: config.bg,
@@ -79,14 +84,16 @@ export function KanbanColumn({ column, onTodoClick }: KanbanColumnProps) {
         </div>
       </div>
 
-      {/* Droppable area */}
+      {/* Droppable area - full width on mobile */}
       <Droppable droppableId={column.id}>
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
             className={cn(
-              "flex-1 rounded-xl sm:rounded-2xl border-2 p-2 sm:p-3 space-y-2 sm:space-y-3 min-h-[300px] sm:min-h-[400px] transition-all duration-300",
+              "flex-1 rounded-xl border-2 p-3 space-y-3 transition-all duration-300",
+              !isMobile && "sm:rounded-2xl sm:min-h-[400px]",
+              isMobile ? "min-h-[calc(100vh-280px)]" : "min-h-[300px]",
               snapshot.isDraggingOver
                 ? cn(
                     "border-dashed scale-[1.02] shadow-lg",
@@ -114,7 +121,10 @@ export function KanbanColumn({ column, onTodoClick }: KanbanColumnProps) {
 
             {/* Empty state */}
             {column.todos.length === 0 && !snapshot.isDraggingOver && (
-              <div className="flex items-center justify-center h-24 sm:h-32 text-muted-foreground/50 text-xs sm:text-sm font-medium">
+              <div className={cn(
+                "flex items-center justify-center text-muted-foreground/50 text-sm font-medium",
+                isMobile ? "h-32" : "h-24 sm:h-32"
+              )}>
                 No tasks
               </div>
             )}
