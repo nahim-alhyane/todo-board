@@ -49,14 +49,14 @@ export function KanbanColumn({ column, onTodoClick }: KanbanColumnProps) {
   return (
     <div className="flex flex-col w-full min-w-0">
       {/* Column header */}
-      <div className="relative mb-4 group">
+      <div className="relative mb-3 sm:mb-4 group">
         <div
-          className="absolute inset-0 rounded-2xl blur-md opacity-50 transition-opacity duration-300 group-hover:opacity-75"
+          className="absolute inset-0 rounded-xl sm:rounded-2xl blur-md opacity-50 transition-opacity duration-300 group-hover:opacity-75"
           style={{ background: config.bg }}
         />
         <div
           className={cn(
-            "relative rounded-2xl border-2 p-4 font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02]",
+            "relative rounded-xl sm:rounded-2xl border-2 p-3 sm:p-4 font-bold text-xs sm:text-sm tracking-wide transition-all duration-300 hover:scale-[1.02]",
             config.borderColor
           )}
           style={{
@@ -67,7 +67,7 @@ export function KanbanColumn({ column, onTodoClick }: KanbanColumnProps) {
           <div className="flex items-center justify-between">
             <span className="uppercase">{column.title}</span>
             <div
-              className="px-3 py-1 rounded-full font-mono text-xs font-semibold shadow-sm"
+              className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full font-mono text-xs font-semibold shadow-sm"
               style={{
                 background: config.fg,
                 color: config.bg,
@@ -86,7 +86,7 @@ export function KanbanColumn({ column, onTodoClick }: KanbanColumnProps) {
             ref={provided.innerRef}
             {...provided.droppableProps}
             className={cn(
-              "flex-1 rounded-2xl border-2 p-3 space-y-3 min-h-[400px] transition-all duration-300",
+              "flex-1 rounded-xl sm:rounded-2xl border-2 p-2 sm:p-3 space-y-2 sm:space-y-3 min-h-[300px] sm:min-h-[400px] transition-all duration-300",
               snapshot.isDraggingOver
                 ? cn(
                     "border-dashed scale-[1.02] shadow-lg",
@@ -114,7 +114,7 @@ export function KanbanColumn({ column, onTodoClick }: KanbanColumnProps) {
 
             {/* Empty state */}
             {column.todos.length === 0 && !snapshot.isDraggingOver && (
-              <div className="flex items-center justify-center h-32 text-muted-foreground/50 text-sm font-medium">
+              <div className="flex items-center justify-center h-24 sm:h-32 text-muted-foreground/50 text-xs sm:text-sm font-medium">
                 No tasks
               </div>
             )}

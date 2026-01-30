@@ -14,7 +14,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="relative w-14 h-14 rounded-2xl bg-background/50 backdrop-blur-sm border border-border/50" />
+      <div className="relative w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-xl sm:rounded-2xl bg-background/50 backdrop-blur-sm border border-border/50" />
     );
   }
 
@@ -23,7 +23,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 backdrop-blur-sm border border-border/50 overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/20"
+      className="relative w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 backdrop-blur-sm border border-border/50 overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/20"
       aria-label="Toggle theme"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-amber-400/20 to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -36,7 +36,7 @@ export function ThemeToggle() {
               : "opacity-100 rotate-0 scale-100"
           }`}
         >
-          <Sun className="w-5 h-5 text-amber-500" />
+          <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
         </div>
         <div
           className={`absolute transition-all duration-500 ${
@@ -45,7 +45,7 @@ export function ThemeToggle() {
               : "opacity-0 -rotate-180 scale-0"
           }`}
         >
-          <Moon className="w-5 h-5 text-indigo-400" />
+          <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400" />
         </div>
       </div>
 

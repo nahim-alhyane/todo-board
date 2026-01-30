@@ -497,38 +497,39 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[500px] sm:max-w-[500px] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>{todo ? "Edit Todo" : "Create Todo"}</SheetTitle>
-          <SheetDescription>
+      <SheetContent className="w-full sm:w-[500px] sm:max-w-[500px] overflow-y-auto p-4 sm:p-6">
+        <SheetHeader className="text-left">
+          <SheetTitle className="text-lg sm:text-xl">{todo ? "Edit Todo" : "Create Todo"}</SheetTitle>
+          <SheetDescription className="text-sm">
             {todo
               ? "Update your todo item details"
               : "Add a new todo item to your board"}
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 py-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 py-4 sm:py-6">
           {/* Title */}
           <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
+            <Label htmlFor="title" className="text-sm font-medium">Title *</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter todo title"
               required
+              className="h-10 sm:h-9 text-base sm:text-sm"
             />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="text-sm font-medium">Description</Label>
             <div data-color-mode="light" className="dark:hidden">
               <MDEditor
                 value={description}
                 onChange={(val) => setDescription(val || "")}
                 preview="edit"
-                height={200}
+                height={180}
               />
             </div>
             <div data-color-mode="dark" className="hidden dark:block">
@@ -536,19 +537,19 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
                 value={description}
                 onChange={(val) => setDescription(val || "")}
                 preview="edit"
-                height={200}
+                height={180}
               />
             </div>
           </div>
 
           {/* Assigned To */}
           <div className="space-y-2">
-            <Label htmlFor="assigned_to">Assigned To</Label>
+            <Label htmlFor="assigned_to" className="text-sm font-medium">Assigned To</Label>
             <Select
               value={assignedTo || "none"}
               onValueChange={(val) => setAssignedTo(val === "none" ? null : (val as AssignedTo))}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-10 sm:h-9">
                 <SelectValue placeholder="Select assignee" />
               </SelectTrigger>
               <SelectContent>
@@ -561,16 +562,17 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
 
           {/* Stakeholders */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Stakeholders</Label>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <Label className="text-sm font-medium">Stakeholders</Label>
               <div className="flex gap-2">
                 <Button
                   type="button"
                   size="sm"
                   variant="outline"
                   onClick={() => setShowNewPersonForm(!showNewPersonForm)}
+                  className="flex-1 sm:flex-none h-9 text-xs sm:text-sm"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   New Person
                 </Button>
                 <Button
@@ -579,9 +581,10 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
                   variant="outline"
                   onClick={addStakeholder}
                   disabled={persons.length === 0}
+                  className="flex-1 sm:flex-none h-9 text-xs sm:text-sm"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Stakeholder
+                  <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  Add
                 </Button>
               </div>
             </div>
@@ -725,14 +728,15 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
           {/* Tasks */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Tasks</Label>
+              <Label className="text-sm font-medium">Tasks</Label>
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 onClick={addTask}
+                className="h-9 text-xs sm:text-sm"
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Add Task
               </Button>
             </div>
@@ -797,13 +801,14 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
 
           {/* Subtasks */}
           <div className="space-y-2">
-            <Label>Subtasks</Label>
+            <Label className="text-sm font-medium">Subtasks</Label>
             <div className="space-y-2">
               <Input
                 placeholder="Add a subtask (press Enter)"
                 value={subtaskInput}
                 onChange={(e) => setSubtaskInput(e.target.value)}
                 onKeyDown={handleSubtaskKeyDown}
+                className="h-10 sm:h-9 text-base sm:text-sm"
               />
               <div className="space-y-2">
                 {subtasks.map((subtask, index) => (
@@ -852,15 +857,16 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
           {todo && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Attachments</Label>
+                <Label className="text-sm font-medium">Attachments</Label>
                 <Button
                   type="button"
                   size="sm"
                   variant="outline"
                   onClick={() => document.getElementById("file-upload")?.click()}
                   disabled={uploading}
+                  className="h-9 text-xs sm:text-sm"
                 >
-                  <Upload className="h-4 w-4 mr-2" />
+                  <Upload className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   {uploading ? "Uploading..." : "Upload"}
                 </Button>
                 <input
@@ -908,11 +914,20 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
             </div>
           )}
 
-          <SheetFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <SheetFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="w-full sm:w-auto h-10 sm:h-9"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full sm:w-auto h-10 sm:h-9"
+            >
               {loading ? "Saving..." : todo ? "Update" : "Create"}
             </Button>
           </SheetFooter>

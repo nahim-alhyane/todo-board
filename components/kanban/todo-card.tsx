@@ -55,39 +55,39 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
       {/* Hover gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-      <CardHeader className="pb-3 relative">
-        <div className="flex items-start justify-between gap-3">
-          <CardTitle className="text-base font-semibold leading-tight flex-1 group-hover:text-primary transition-colors duration-300">
+      <CardHeader className="pb-2 sm:pb-3 relative p-3 sm:p-4">
+        <div className="flex items-start justify-between gap-2 sm:gap-3">
+          <CardTitle className="text-sm sm:text-base font-semibold leading-tight flex-1 group-hover:text-primary transition-colors duration-300">
             {todo.title}
           </CardTitle>
           {todo.assigned_to && (
             <Badge
               variant="secondary"
               className={cn(
-                "flex items-center gap-1.5 text-white font-medium shadow-lg transition-all duration-300 hover:scale-105",
+                "flex items-center gap-1 sm:gap-1.5 text-white font-medium shadow-lg transition-all duration-300 hover:scale-105 text-xs px-2 py-0.5",
                 assigneeConfig.bg,
                 assigneeConfig.glow
               )}
             >
-              <User className="h-3.5 w-3.5" />
-              <span className="capitalize">{todo.assigned_to}</span>
+              <User className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <span className="capitalize text-xs">{todo.assigned_to}</span>
             </Badge>
           )}
         </div>
       </CardHeader>
 
       {(todo.description || hasTasks || hasSubtasks || stakeholderCount > 0 || attachmentCount > 0) && (
-        <CardContent className="space-y-3 relative">
+        <CardContent className="space-y-2 sm:space-y-3 relative p-3 sm:p-4 pt-0 sm:pt-0">
           {todo.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
               {todo.description}
             </p>
           )}
 
           {hasTasks && (
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               {/* Task progress bar */}
-              <div className="relative h-2 rounded-full bg-muted overflow-hidden">
+              <div className="relative h-1.5 sm:h-2 rounded-full bg-muted overflow-hidden">
                 <div
                   className={cn(
                     "absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out",
@@ -100,19 +100,19 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
               </div>
 
               {/* Task counter */}
-              <div className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
                 {allTasksComplete ? (
                   <>
-                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-500" />
-                    <span className="font-medium text-green-600 dark:text-green-500">
+                    <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 dark:text-green-500" />
+                    <span className="font-medium text-green-600 dark:text-green-500 text-xs sm:text-sm">
                       All tasks complete
                     </span>
-                    <Sparkles className="h-3.5 w-3.5 text-green-600 dark:text-green-500 animate-pulse" />
+                    <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-green-600 dark:text-green-500 animate-pulse" />
                   </>
                 ) : (
                   <>
-                    <Circle className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground font-medium">
+                    <Circle className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground font-medium text-xs sm:text-sm">
                       {completedTasks}/{totalTasks} tasks
                     </span>
                   </>
@@ -123,7 +123,7 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
 
           {/* Subtask counter */}
           {hasSubtasks && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
               <span className="font-medium">
                 {completedSubtasks}/{totalSubtasks} subtasks
               </span>
@@ -132,10 +132,10 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
 
           {/* Metadata row: Stakeholders & Attachments */}
           {(stakeholderCount > 0 || attachmentCount > 0) && (
-            <div className="flex items-center gap-3 pt-1">
+            <div className="flex items-center gap-2 sm:gap-3 pt-0.5 sm:pt-1">
               {stakeholderCount > 0 && (
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="flex -space-x-1.5 sm:-space-x-2">
                     {todo.stakeholders?.slice(0, 3).map((stakeholder, idx) => {
                       const person = stakeholder.person;
                       if (!person) return null;
@@ -153,7 +153,7 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
                         <div
                           key={stakeholder.id}
                           className={cn(
-                            "h-7 w-7 rounded-full flex items-center justify-center text-white text-xs font-semibold border-2 border-background shadow-sm",
+                            "h-6 w-6 sm:h-7 sm:w-7 rounded-full flex items-center justify-center text-white text-[10px] sm:text-xs font-semibold border-2 border-background shadow-sm",
                             colorClass
                           )}
                           title={`${person.firstname} ${person.lastname}`}
@@ -163,7 +163,7 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
                       );
                     })}
                     {stakeholderCount > 3 && (
-                      <div className="h-7 w-7 rounded-full flex items-center justify-center bg-muted text-muted-foreground text-xs font-semibold border-2 border-background">
+                      <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full flex items-center justify-center bg-muted text-muted-foreground text-[10px] sm:text-xs font-semibold border-2 border-background">
                         +{stakeholderCount - 3}
                       </div>
                     )}
@@ -171,8 +171,8 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
                 </div>
               )}
               {attachmentCount > 0 && (
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Paperclip className="h-3.5 w-3.5" />
+                <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-muted-foreground">
+                  <Paperclip className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                   <span className="font-medium">{attachmentCount}</span>
                 </div>
               )}

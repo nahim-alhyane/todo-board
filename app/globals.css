@@ -138,6 +138,16 @@
   .glass-border {
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
+
+  /* Hide scrollbar for horizontal scrolling elements */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes fadeIn {

@@ -24,6 +24,7 @@ export function KanbanBoard() {
   const [assigneeFilter, setAssigneeFilter] = useState<AssignedTo | "all">("all");
   const [formOpen, setFormOpen] = useState(false);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
+  const [mobileActiveColumn, setMobileActiveColumn] = useState<TodoStatus>("TODO");
 
   useEffect(() => {
     fetchTodos();
@@ -211,11 +212,11 @@ export function KanbanBoard() {
   const columns = getColumns();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Action bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/50 shadow-sm">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold text-foreground/80 tracking-wide uppercase">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-card border border-border/50 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+          <span className="text-xs sm:text-sm font-semibold text-foreground/80 tracking-wide uppercase">
             Filter:
           </span>
           <div className="flex flex-wrap gap-2">
@@ -223,27 +224,27 @@ export function KanbanBoard() {
             variant={assigneeFilter === "all" ? "default" : "outline"}
             size="sm"
             onClick={() => setAssigneeFilter("all")}
-            className="rounded-xl font-medium transition-all duration-300 hover:scale-105"
+            className="rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-xs sm:text-sm"
           >
-            <Users className="h-4 w-4 mr-2" />
+            <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             All Tasks
           </Button>
           <Button
             variant={assigneeFilter === "nahim" ? "default" : "outline"}
             size="sm"
             onClick={() => setAssigneeFilter("nahim")}
-            className="rounded-xl font-medium transition-all duration-300 hover:scale-105"
+            className="rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-xs sm:text-sm"
           >
-            <User className="h-4 w-4 mr-2" />
+            <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             Nahim
           </Button>
           <Button
             variant={assigneeFilter === "vanessa" ? "default" : "outline"}
             size="sm"
             onClick={() => setAssigneeFilter("vanessa")}
-            className="rounded-xl font-medium transition-all duration-300 hover:scale-105"
+            className="rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-xs sm:text-sm"
           >
-            <User className="h-4 w-4 mr-2" />
+            <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             Vanessa
           </Button>
           </div>
@@ -253,16 +254,46 @@ export function KanbanBoard() {
             setSelectedTodo(null);
             setFormOpen(true);
           }}
-          className="rounded-xl font-medium transition-all duration-300 hover:scale-105"
+          className="rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-xs sm:text-sm hidden sm:flex"
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
           Add Todo
         </Button>
       </div>
 
+      {/* Mobile column selector tabs */}
+      <div className="flex sm:hidden overflow-x-auto gap-2 pb-2 px-1 scrollbar-hide">
+        {COLUMNS.map((column) => {
+          const columnData = columns.find(c => c.id === column.id);
+          const todoCount = columnData?.todos.length || 0;
+
+          return (
+            <button
+              key={column.id}
+              onClick={() => setMobileActiveColumn(column.id)}
+              className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium text-xs transition-all duration-300 whitespace-nowrap ${
+                mobileActiveColumn === column.id
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-card border border-border/50 text-muted-foreground hover:bg-accent"
+              }`}
+            >
+              {column.title}
+              <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
+                mobileActiveColumn === column.id
+                  ? "bg-primary-foreground/20 text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
+              }`}>
+                {todoCount}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Kanban columns */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-5 gap-4 pb-4 px-1">
+        {/* Desktop: All columns */}
+        <div className="hidden sm:grid sm:grid-cols-5 gap-4 pb-4 px-1">
           {columns.map((column, index) => (
             <div
               key={column.id}
@@ -273,7 +304,30 @@ export function KanbanBoard() {
             </div>
           ))}
         </div>
+
+        {/* Mobile: Single active column */}
+        <div className="sm:hidden pb-4 px-1">
+          {columns
+            .filter((column) => column.id === mobileActiveColumn)
+            .map((column) => (
+              <div key={column.id} className="animate-slide-up">
+                <KanbanColumn column={column} onTodoClick={handleTodoClick} />
+              </div>
+            ))}
+        </div>
       </DragDropContext>
+
+      {/* Floating Action Button (Mobile) */}
+      <button
+        onClick={() => {
+          setSelectedTodo(null);
+          setFormOpen(true);
+        }}
+        className="sm:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center z-40"
+        aria-label="Add Todo"
+      >
+        <Plus className="h-6 w-6" />
+      </button>
 
       {/* Todo form sheet */}
       <TodoFormSheet
