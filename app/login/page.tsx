@@ -28,7 +28,10 @@ export default function LoginPage() {
       setError(error.message);
       setLoading(false);
     } else {
-      router.push("/");
+      // Small delay to let auth state update
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 500);
     }
   };
 
