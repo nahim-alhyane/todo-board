@@ -2,11 +2,12 @@
 
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { TodoCard } from "./todo-card";
-import { KanbanColumn as KanbanColumnType, Todo } from "./types";
+import { KanbanColumn as KanbanColumnType, Todo, Profile } from "./types";
 import { cn } from "@/lib/utils";
 
 interface KanbanColumnProps {
   column: KanbanColumnType;
+  profiles: Profile[];
   onTodoClick: (todo: Todo) => void;
   isMobile?: boolean;
 }
@@ -44,7 +45,7 @@ const statusConfig = {
   },
 };
 
-export function KanbanColumn({ column, onTodoClick, isMobile = false }: KanbanColumnProps) {
+export function KanbanColumn({ column, profiles, onTodoClick, isMobile = false }: KanbanColumnProps) {
   const config = statusConfig[column.id];
 
   return (
@@ -112,7 +113,7 @@ export function KanbanColumn({ column, onTodoClick, isMobile = false }: KanbanCo
                     {...provided.dragHandleProps}
                     onClick={() => onTodoClick(todo)}
                   >
-                    <TodoCard todo={todo} isDragging={snapshot.isDragging} />
+                    <TodoCard todo={todo} profiles={profiles} isDragging={snapshot.isDragging} />
                   </div>
                 )}
               </Draggable>

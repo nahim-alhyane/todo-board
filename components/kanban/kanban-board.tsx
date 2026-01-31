@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { KanbanColumn } from "./kanban-column";
-import { Todo, TodoStatus, KanbanColumn as KanbanColumnType, AssignedTo } from "./types";
+import { Todo, TodoStatus, KanbanColumn as KanbanColumnType, AssignedTo, Profile } from "./types";
 import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ const COLUMNS: { id: TodoStatus; title: string }[] = [
 
 export function KanbanBoard() {
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [assigneeFilter, setAssigneeFilter] = useState<AssignedTo | "all">("all");
   const [formOpen, setFormOpen] = useState(false);
@@ -28,6 +29,7 @@ export function KanbanBoard() {
 
   useEffect(() => {
     fetchTodos();
+    fetchProfiles();
 
     const channel = supabase
       .channel("todos-changes")
@@ -71,6 +73,13 @@ export function KanbanBoard() {
         { event: "*", schema: "public", table: "subtasks" },
         () => {
           fetchTodos();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles" },
+        () => {
+          fetchProfiles();
         }
       )
       .subscribe();
@@ -131,6 +140,20 @@ export function KanbanBoard() {
       console.error("Error fetching todos:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchProfiles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("display_name");
+
+      if (error) throw error;
+      setProfiles(data || []);
+    } catch (error) {
+      console.error("Error fetching profiles:", error);
     }
   };
 
@@ -229,24 +252,18 @@ export function KanbanBoard() {
             <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             All Tasks
           </Button>
-          <Button
-            variant={assigneeFilter === "nahim" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setAssigneeFilter("nahim")}
-            className="rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-xs sm:text-sm"
-          >
-            <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            Nahim
-          </Button>
-          <Button
-            variant={assigneeFilter === "vanessa" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setAssigneeFilter("vanessa")}
-            className="rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-xs sm:text-sm"
-          >
-            <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            Vanessa
-          </Button>
+          {profiles.map((profile) => (
+            <Button
+              key={profile.id}
+              variant={assigneeFilter === profile.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setAssigneeFilter(profile.id)}
+              className="rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-xs sm:text-sm"
+            >
+              <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              {profile.display_name || profile.email}
+            </Button>
+          ))}
           </div>
         </div>
         <Button
@@ -272,24 +289,18 @@ export function KanbanBoard() {
           <Users className="h-3 w-3 mr-1" />
           All
         </Button>
-        <Button
-          variant={assigneeFilter === "nahim" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setAssigneeFilter("nahim")}
-          className="rounded-lg font-medium transition-all flex-shrink-0 h-8 text-xs"
-        >
-          <User className="h-3 w-3 mr-1" />
-          Nahim
-        </Button>
-        <Button
-          variant={assigneeFilter === "vanessa" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setAssigneeFilter("vanessa")}
-          className="rounded-lg font-medium transition-all flex-shrink-0 h-8 text-xs"
-        >
-          <User className="h-3 w-3 mr-1" />
-          Vanessa
-        </Button>
+        {profiles.map((profile) => (
+          <Button
+            key={profile.id}
+            variant={assigneeFilter === profile.id ? "default" : "outline"}
+            size="sm"
+            onClick={() => setAssigneeFilter(profile.id)}
+            className="rounded-lg font-medium transition-all flex-shrink-0 h-8 text-xs"
+          >
+            <User className="h-3 w-3 mr-1" />
+            {profile.display_name || profile.email.split('@')[0]}
+          </Button>
+        ))}
       </div>
 
       {/* Mobile Lane Tabs - COMPLETELY NEW DESIGN */}
@@ -334,7 +345,7 @@ export function KanbanBoard() {
               className="animate-slide-up min-w-0"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <KanbanColumn column={column} onTodoClick={handleTodoClick} />
+              <KanbanColumn column={column} profiles={profiles} onTodoClick={handleTodoClick} />
             </div>
           ))}
         </div>
@@ -347,6 +358,7 @@ export function KanbanBoard() {
               <div key={column.id} className="animate-slide-up px-1">
                 <KanbanColumn
                   column={column}
+                  profiles={profiles}
                   onTodoClick={handleTodoClick}
                   isMobile={true}
                 />

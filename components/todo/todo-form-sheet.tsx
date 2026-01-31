@@ -15,7 +15,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Todo, Task, Stakeholder, Person, Attachment, AssignedTo } from "@/components/kanban/types";
+import { Todo, Task, Stakeholder, Person, Attachment, AssignedTo, Profile } from "@/components/kanban/types";
 import { supabase } from "@/lib/supabase/client";
 import { X, Plus, Upload, FileText, Trash2, Check, Eye, Edit as EditIcon, AlertTriangle } from "lucide-react";
 import {
@@ -74,6 +74,8 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
   const [stakeholders, setStakeholders] = useState<StakeholderForm[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [persons, setPersons] = useState<Person[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showNewPersonForm, setShowNewPersonForm] = useState(false);
@@ -107,6 +109,8 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
   useEffect(() => {
     if (open) {
       fetchPersons();
+      fetchProfiles();
+      getCurrentUser();
       if (todo) {
         setTitle(todo.title);
         setDescription(todo.description || "");
@@ -162,6 +166,24 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
     const { data, error } = await supabase.from("persons").select("*");
     if (!error && data) {
       setPersons(data);
+    }
+  };
+
+  const fetchProfiles = async () => {
+    const { data, error } = await supabase.from("profiles").select("*");
+    if (!error && data) {
+      setProfiles(data);
+    }
+  };
+
+  const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setCurrentUserId(user.id);
+      // Default to current user for new todos
+      if (!todo && !assignedTo) {
+        setAssignedTo(user.id);
+      }
     }
   };
 
@@ -661,15 +683,18 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
             <Label htmlFor="assigned_to" className="text-sm font-medium">Assigned To</Label>
             <Select
               value={assignedTo || "none"}
-              onValueChange={(val) => setAssignedTo(val === "none" ? null : (val as AssignedTo))}
+              onValueChange={(val) => setAssignedTo(val === "none" ? null : val)}
             >
               <SelectTrigger className="h-10 sm:h-9">
                 <SelectValue placeholder="Select assignee" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">None</SelectItem>
-                <SelectItem value="nahim">Nahim</SelectItem>
-                <SelectItem value="vanessa">Vanessa</SelectItem>
+                {profiles.map((profile) => (
+                  <SelectItem key={profile.id} value={profile.id}>
+                    {profile.display_name || profile.email}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

@@ -1,5 +1,13 @@
 export type TodoStatus = "BACKLOG" | "TODO" | "IN_PROGRESS" | "BLOCKED" | "DONE";
-export type AssignedTo = "nahim" | "vanessa" | null;
+export type AssignedTo = string | null; // UUID reference to profiles.id
+
+// Profile entity
+export interface Profile {
+  id: string; // UUID from auth.users
+  email: string;
+  display_name: string | null;
+  created_at: string;
+}
 
 // Person entity
 export interface Person {

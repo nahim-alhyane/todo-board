@@ -2,17 +2,18 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Todo } from "./types";
+import { Todo, Profile } from "./types";
 import { User, CheckCircle2, Circle, Sparkles, Paperclip, Users, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 
 interface TodoCardProps {
   todo: Todo;
+  profiles: Profile[];
   isDragging?: boolean;
 }
 
-export function TodoCard({ todo, isDragging }: TodoCardProps) {
+export function TodoCard({ todo, profiles, isDragging }: TodoCardProps) {
   const completedTasks = todo.tasks?.filter((t) => t.completed).length || 0;
   const totalTasks = todo.tasks?.length || 0;
   const hasTasks = totalTasks > 0;
@@ -55,26 +56,27 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
     return null;
   };
 
-  const getAssigneeConfig = (assignee: string | null) => {
-    if (assignee === "nahim") {
-      return {
-        bg: "bg-gradient-to-br from-blue-500 to-blue-600",
-        glow: "shadow-blue-500/50",
-      };
-    }
-    if (assignee === "vanessa") {
-      return {
-        bg: "bg-gradient-to-br from-purple-500 to-purple-600",
-        glow: "shadow-purple-500/50",
-      };
-    }
-    return {
-      bg: "bg-gradient-to-br from-gray-500 to-gray-600",
-      glow: "shadow-gray-500/50",
-    };
+  // Get assignee profile
+  const assigneeProfile = todo.assigned_to
+    ? profiles.find(p => p.id === todo.assigned_to)
+    : null;
+
+  const getAssigneeConfig = (index: number) => {
+    const colors = [
+      { bg: "bg-gradient-to-br from-blue-500 to-blue-600", glow: "shadow-blue-500/50" },
+      { bg: "bg-gradient-to-br from-purple-500 to-purple-600", glow: "shadow-purple-500/50" },
+      { bg: "bg-gradient-to-br from-green-500 to-green-600", glow: "shadow-green-500/50" },
+      { bg: "bg-gradient-to-br from-orange-500 to-orange-600", glow: "shadow-orange-500/50" },
+    ];
+    return colors[index % colors.length];
   };
 
-  const assigneeConfig = getAssigneeConfig(todo.assigned_to);
+  const assigneeIndex = assigneeProfile
+    ? profiles.findIndex(p => p.id === assigneeProfile.id)
+    : 0;
+  const assigneeConfig = assigneeProfile
+    ? getAssigneeConfig(assigneeIndex)
+    : { bg: "bg-gradient-to-br from-gray-500 to-gray-600", glow: "shadow-gray-500/50" };
 
   return (
     <Card
@@ -92,7 +94,7 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
           <CardTitle className="text-sm sm:text-base font-semibold leading-tight flex-1 group-hover:text-primary transition-colors duration-300">
             {todo.title}
           </CardTitle>
-          {todo.assigned_to && (
+          {assigneeProfile && (
             <Badge
               variant="secondary"
               className={cn(
@@ -102,7 +104,9 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
               )}
             >
               <User className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-              <span className="capitalize text-xs">{todo.assigned_to}</span>
+              <span className="capitalize text-xs">
+                {assigneeProfile.display_name || assigneeProfile.email}
+              </span>
             </Badge>
           )}
         </div>
