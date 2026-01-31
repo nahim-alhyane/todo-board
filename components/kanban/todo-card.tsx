@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Todo } from "./types";
-import { User, CheckCircle2, Circle, Sparkles, Paperclip, Users } from "lucide-react";
+import { User, CheckCircle2, Circle, Sparkles, Paperclip, Users, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 
@@ -23,6 +23,37 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
   const hasSubtasks = totalSubtasks > 0;
   const stakeholderCount = todo.stakeholders?.length || 0;
   const attachmentCount = todo.attachments?.length || 0;
+
+  // Check if due date is overdue
+  const isOverdue = todo.due_date && new Date(todo.due_date) < new Date(new Date().toDateString());
+
+  // Format due date
+  const formatDueDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const getCategoryConfig = (category: string | null) => {
+    if (category === "Work") {
+      return {
+        bg: "bg-blue-500",
+        text: "text-white",
+      };
+    }
+    if (category === "Personal") {
+      return {
+        bg: "bg-green-500",
+        text: "text-white",
+      };
+    }
+    if (category === "DJ") {
+      return {
+        bg: "bg-purple-500",
+        text: "text-white",
+      };
+    }
+    return null;
+  };
 
   const getAssigneeConfig = (assignee: string | null) => {
     if (assignee === "nahim") {
@@ -72,6 +103,32 @@ export function TodoCard({ todo, isDragging }: TodoCardProps) {
             >
               <User className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span className="capitalize text-xs">{todo.assigned_to}</span>
+            </Badge>
+          )}
+        </div>
+        {/* Category and Due Date */}
+        <div className="flex flex-wrap items-center gap-2 mt-2">
+          {todo.category && (
+            <Badge
+              className={cn(
+                "text-xs px-2 py-0.5 font-medium",
+                getCategoryConfig(todo.category)?.bg,
+                getCategoryConfig(todo.category)?.text
+              )}
+            >
+              {todo.category}
+            </Badge>
+          )}
+          {todo.due_date && (
+            <Badge
+              variant="outline"
+              className={cn(
+                "flex items-center gap-1 text-xs px-2 py-0.5 font-medium",
+                isOverdue && "border-red-500 text-red-500 bg-red-50 dark:bg-red-950/20"
+              )}
+            >
+              <Calendar className="h-3 w-3" />
+              <span>Due: {formatDueDate(todo.due_date)}</span>
             </Badge>
           )}
         </div>

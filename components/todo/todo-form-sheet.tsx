@@ -65,6 +65,8 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [assignedTo, setAssignedTo] = useState<AssignedTo>(null);
+  const [category, setCategory] = useState<'Work' | 'Personal' | 'DJ' | null>(null);
+  const [dueDate, setDueDate] = useState<string>("");
   const [tasks, setTasks] = useState<TaskForm[]>([]);
   const [subtasks, setSubtasks] = useState<SubtaskForm[]>([]);
   const [subtaskInput, setSubtaskInput] = useState("");
@@ -108,6 +110,8 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
         setTitle(todo.title);
         setDescription(todo.description || "");
         setAssignedTo(todo.assigned_to);
+        setCategory(todo.category);
+        setDueDate(todo.due_date || "");
         setTasks(
           (todo.tasks || []).map((t) => ({
             id: t.id,
@@ -137,6 +141,8 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
     setTitle("");
     setDescription("");
     setAssignedTo(null);
+    setCategory(null);
+    setDueDate("");
     setTasks([]);
     setSubtasks([]);
     setSubtaskInput("");
@@ -443,6 +449,8 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
             title,
             description,
             assigned_to: assignedTo,
+            category,
+            due_date: dueDate || null,
           })
           .eq("id", todo.id);
 
@@ -455,6 +463,8 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
             title,
             description,
             assigned_to: assignedTo,
+            category,
+            due_date: dueDate || null,
             status: "BACKLOG",
             position: 0,
           })
@@ -661,6 +671,49 @@ export function TodoFormSheet({ open, onOpenChange, todo, onSuccess }: TodoFormS
                 <SelectItem value="vanessa">Vanessa</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Category */}
+          <div className="space-y-2">
+            <Label htmlFor="category" className="text-sm font-medium">Category</Label>
+            <Select
+              value={category || "none"}
+              onValueChange={(val) => setCategory(val === "none" ? null : (val as 'Work' | 'Personal' | 'DJ'))}
+            >
+              <SelectTrigger className="h-10 sm:h-9">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="Work">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-blue-500 text-white">Work</Badge>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Personal">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-green-500 text-white">Personal</Badge>
+                  </div>
+                </SelectItem>
+                <SelectItem value="DJ">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-purple-500 text-white">DJ</Badge>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Due Date */}
+          <div className="space-y-2">
+            <Label htmlFor="due_date" className="text-sm font-medium">Due Date</Label>
+            <Input
+              id="due_date"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="h-10 sm:h-9 text-base sm:text-sm"
+            />
           </div>
 
           {/* Stakeholders */}

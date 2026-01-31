@@ -63,6 +63,8 @@ export interface Todo {
   assigned_to: AssignedTo;
   status: TodoStatus;
   position: number;
+  category: 'Work' | 'Personal' | 'DJ' | null;
+  due_date: string | null;
   created_at: string;
   updated_at: string;
   tasks?: Task[];
