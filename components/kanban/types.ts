@@ -98,3 +98,13 @@ export interface KanbanColumn {
 
 // Backward compatibility
 export type Assignee = AssignedTo;
+
+// Voice draft entity (raw transcript captured by mic, awaiting processing into a todo)
+export interface VoiceDraft {
+  id: string;
+  transcript: string;
+  created_by: AssignedTo;
+  processed: boolean;
+  processed_at: string | null;
+  created_at: string;
+}

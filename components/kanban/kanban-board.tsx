@@ -7,8 +7,10 @@ import { Todo, TodoStatus, KanbanColumn as KanbanColumnType, AssignedTo, Profile
 import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, Users, Plus } from "lucide-react";
+import { User, Users, Plus, Mic, Inbox } from "lucide-react";
 import { TodoFormSheet } from "@/components/todo/todo-form-sheet";
+import { VoiceRecorderDialog } from "@/components/voice/voice-recorder-dialog";
+import { VoiceInboxDrawer } from "@/components/voice/voice-inbox-drawer";
 
 const COLUMNS: { id: TodoStatus; title: string }[] = [
   { id: "BACKLOG", title: "Backlog" },
@@ -26,10 +28,14 @@ export function KanbanBoard() {
   const [formOpen, setFormOpen] = useState(false);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [mobileActiveColumn, setMobileActiveColumn] = useState<TodoStatus>("TODO");
+  const [voiceRecorderOpen, setVoiceRecorderOpen] = useState(false);
+  const [voiceInboxOpen, setVoiceInboxOpen] = useState(false);
+  const [pendingVoiceCount, setPendingVoiceCount] = useState(0);
 
   useEffect(() => {
     fetchTodos();
     fetchProfiles();
+    fetchPendingVoiceCount();
 
     const channel = supabase
       .channel("todos-changes")
@@ -80,6 +86,13 @@ export function KanbanBoard() {
         { event: "*", schema: "public", table: "profiles" },
         () => {
           fetchProfiles();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "voice_drafts" },
+        () => {
+          fetchPendingVoiceCount();
         }
       )
       .subscribe();
@@ -154,6 +167,19 @@ export function KanbanBoard() {
       setProfiles(data || []);
     } catch (error) {
       console.error("Error fetching profiles:", error);
+    }
+  };
+
+  const fetchPendingVoiceCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from("voice_drafts")
+        .select("*", { count: "exact", head: true })
+        .eq("processed", false);
+      if (error) throw error;
+      setPendingVoiceCount(count ?? 0);
+    } catch (error) {
+      console.error("Error fetching voice draft count:", error);
     }
   };
 
@@ -266,16 +292,46 @@ export function KanbanBoard() {
           ))}
           </div>
         </div>
-        <Button
-          onClick={() => {
-            setSelectedTodo(null);
-            setFormOpen(true);
-          }}
-          className="rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-xs sm:text-sm"
-        >
-          <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-          Add Todo
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setVoiceInboxOpen(true)}
+            className="relative rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-xs sm:text-sm"
+            aria-label="Voice inbox"
+          >
+            <Inbox className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            Inbox
+            {pendingVoiceCount > 0 && (
+              <Badge
+                variant="default"
+                className="ml-2 h-5 min-w-5 px-1.5 text-[10px] tabular-nums"
+              >
+                {pendingVoiceCount}
+              </Badge>
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setVoiceRecorderOpen(true)}
+            className="rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-xs sm:text-sm"
+            aria-label="Record voice draft"
+          >
+            <Mic className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            Voice
+          </Button>
+          <Button
+            onClick={() => {
+              setSelectedTodo(null);
+              setFormOpen(true);
+            }}
+            className="rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-xs sm:text-sm"
+          >
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            Add Todo
+          </Button>
+        </div>
       </div>
 
       {/* Mobile Filters - compact version */}
@@ -367,17 +423,38 @@ export function KanbanBoard() {
         </div>
       </DragDropContext>
 
-      {/* Floating Action Button (Mobile) - IMPROVED */}
-      <button
-        onClick={() => {
-          setSelectedTodo(null);
-          setFormOpen(true);
-        }}
-        className="sm:hidden fixed bottom-8 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center z-50"
-        aria-label="Add Todo"
-      >
-        <Plus className="h-6 w-6" strokeWidth={2.5} />
-      </button>
+      {/* Floating Action Buttons (Mobile) */}
+      <div className="sm:hidden fixed bottom-8 right-6 flex flex-col gap-3 z-50">
+        <button
+          onClick={() => setVoiceInboxOpen(true)}
+          className="relative w-12 h-12 rounded-full bg-card border border-border text-foreground shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center"
+          aria-label="Voice inbox"
+        >
+          <Inbox className="h-5 w-5" strokeWidth={2.2} />
+          {pendingVoiceCount > 0 && (
+            <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+              {pendingVoiceCount}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setVoiceRecorderOpen(true)}
+          className="w-12 h-12 rounded-full bg-card border border-border text-foreground shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center"
+          aria-label="Record voice draft"
+        >
+          <Mic className="h-5 w-5" strokeWidth={2.2} />
+        </button>
+        <button
+          onClick={() => {
+            setSelectedTodo(null);
+            setFormOpen(true);
+          }}
+          className="w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center"
+          aria-label="Add Todo"
+        >
+          <Plus className="h-6 w-6" strokeWidth={2.5} />
+        </button>
+      </div>
 
       {/* Todo form sheet */}
       <TodoFormSheet
@@ -385,6 +462,19 @@ export function KanbanBoard() {
         onOpenChange={handleFormClose}
         todo={selectedTodo}
         onSuccess={handleFormSuccess}
+      />
+
+      {/* Voice recorder + inbox */}
+      <VoiceRecorderDialog
+        open={voiceRecorderOpen}
+        onOpenChange={setVoiceRecorderOpen}
+        profiles={profiles}
+        defaultCreatedBy={assigneeFilter !== "all" ? assigneeFilter : null}
+      />
+      <VoiceInboxDrawer
+        open={voiceInboxOpen}
+        onOpenChange={setVoiceInboxOpen}
+        profiles={profiles}
       />
     </div>
   );

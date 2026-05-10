@@ -68,6 +68,20 @@ CREATE TABLE attachments (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Voice drafts table (raw transcripts captured by mic; processed asynchronously into todos by a separate tool)
+CREATE TABLE voice_drafts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  transcript TEXT NOT NULL,
+  created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  processed BOOLEAN NOT NULL DEFAULT FALSE,
+  processed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_voice_drafts_unprocessed
+  ON voice_drafts(created_at DESC)
+  WHERE processed = FALSE;
+
 -- Indexes for better query performance
 CREATE INDEX idx_todos_status ON todos(status);
 CREATE INDEX idx_todos_assigned_to ON todos(assigned_to);
@@ -106,6 +120,7 @@ ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE persons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE stakeholders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE attachments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE voice_drafts ENABLE ROW LEVEL SECURITY;
 
 -- Create policies (allow all operations for now - adjust based on auth requirements)
 CREATE POLICY "Allow all operations on projects" ON projects FOR ALL USING (true);
@@ -114,6 +129,7 @@ CREATE POLICY "Allow all operations on tasks" ON tasks FOR ALL USING (true);
 CREATE POLICY "Allow all operations on persons" ON persons FOR ALL USING (true);
 CREATE POLICY "Allow all operations on stakeholders" ON stakeholders FOR ALL USING (true);
 CREATE POLICY "Allow all operations on attachments" ON attachments FOR ALL USING (true);
+CREATE POLICY "Allow all operations on voice_drafts" ON voice_drafts FOR ALL USING (true);
 
 -- Insert sample project
 INSERT INTO projects (name, description, color) VALUES
