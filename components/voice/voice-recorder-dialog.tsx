@@ -46,6 +46,10 @@ export function VoiceRecorderDialog({
   const [supported, setSupported] = useState(true);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  // Text in the textarea before the current recording session started.
+  // We rebuild the full transcript from scratch on every onresult event, so we
+  // need a stable base to prepend the session's words onto.
+  const baseTranscriptRef = useRef("");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -91,15 +95,20 @@ export function VoiceRecorderDialog({
 
     setError(null);
     setInterim("");
+    baseTranscriptRef.current = transcript.trim();
     const recognition = new Ctor();
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = navigator.language || "en-US";
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
+      // Rebuild the session text from ALL results every event. Some browsers
+      // (notably Chrome under certain network conditions) keep finalized
+      // entries in event.results and reset resultIndex, which would cause
+      // duplicated words if we appended incrementally.
       let interimText = "";
       let finalText = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
+      for (let i = 0; i < event.results.length; i++) {
         const result = event.results[i];
         const text = result[0]?.transcript ?? "";
         if (result.isFinal) {
@@ -108,10 +117,10 @@ export function VoiceRecorderDialog({
           interimText += text;
         }
       }
-      if (finalText) {
-        setTranscript((prev) => (prev ? `${prev} ${finalText.trim()}` : finalText.trim()));
-      }
-      setInterim(interimText);
+      const base = baseTranscriptRef.current;
+      const combinedFinal = [base, finalText.trim()].filter(Boolean).join(" ");
+      setTranscript(combinedFinal);
+      setInterim(interimText.trim());
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -240,12 +249,17 @@ export function VoiceRecorderDialog({
             <Label htmlFor="transcript">Transcript</Label>
             <Textarea
               id="transcript"
-              value={interim ? `${transcript}${transcript ? " " : ""}${interim}` : transcript}
+              value={transcript}
               onChange={(e) => setTranscript(e.target.value)}
               placeholder="Your words will appear here as you speak. You can also edit this manually."
               className="flex-1 min-h-[120px] resize-none"
               disabled={isSaving}
             />
+            {isRecording && interim && (
+              <p className="text-xs italic text-muted-foreground truncate">
+                Listening: {interim}…
+              </p>
+            )}
           </div>
 
           {error && (
